@@ -3,6 +3,7 @@ lanczos diag using numpy dense array
 """
 import numpy as np
 from scipy.linalg import eigh_tridiagonal
+from scipy.sparse import csr_matrix
 
 def lanczos_eig(A,v0,m):
     '''
