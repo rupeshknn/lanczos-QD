@@ -6,7 +6,7 @@ import numpy as np
 from scipy.linalg import eigh_tridiagonal
 from scipy.sparse import csr_matrix
 
-def lanczos_eig(array:csr_matrix,v_0:np.array,k_dim:int)->Tuple(np.array, np.array):
+def lanczos_eig(array:csr_matrix,v_0:np.ndarray,k_dim:int)->Tuple(np.ndarray, np.ndarray):
     '''
     Finds the lowest k_dim eigen values and eigen vectors of alpha symmetric array
 
