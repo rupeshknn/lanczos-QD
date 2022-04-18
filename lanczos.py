@@ -1,5 +1,5 @@
 """
-lanczos diag using numpy dense array
+lanczos diag
 """
 from typing import Tuple
 import numpy as np
