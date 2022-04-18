@@ -3,8 +3,9 @@ Module contaning Lanczos diagonalization algorithm
 """
 from typing import Tuple
 import numpy as np
-from scipy.linalg import eigh_tridiagonal
+# from scipy.linalg import eigh_tridiagonal
 from scipy.sparse import csr_matrix
+from helper import eigh_tridiagonal
 def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndarray, np.ndarray]:
     '''
     Finds the lowest k_dim eigen values and eigen vectors of alpha symmetric array
@@ -20,15 +21,16 @@ def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndar
     eigen_value : ndarray, shape (k_dim,) Eigenvalues
     eigen_vectors : ndarray, shape (ndim, k_dim) Eigenvectors
     '''
+    data_type = array.dtype
 
     array_dim = v_0.size
-    q_basis = np.zeros((k_dim, array_dim))
+    q_basis = np.zeros((k_dim, array_dim),dtype=data_type)
 
     v_p = np.zeros_like(v_0)
     projection = np.zeros_like(v_0) # v1
 
-    beta = np.zeros((k_dim,))
-    alpha = np.zeros((k_dim,))
+    beta = np.zeros((k_dim,),dtype=data_type)
+    alpha = np.zeros((k_dim,),dtype=data_type)
 
     v_0 = v_0 / np.linalg.norm(v_0)
     q_basis[0,:] = v_0
