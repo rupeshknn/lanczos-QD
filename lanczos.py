@@ -21,22 +21,22 @@ def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndar
     eigen_value : ndarray, shape (k_dim,) Eigenvalues
     eigen_vectors : ndarray, shape (ndim, k_dim) Eigenvectors
     '''
-    data_type = array.dtype
-
+    # data_type = array.dtype
+    print(3)
     array_dim = v_0.size
-    q_basis = np.zeros((k_dim, array_dim),dtype=data_type)
+    q_basis = np.zeros((k_dim, array_dim))
 
     v_p = np.zeros_like(v_0)
     projection = np.zeros_like(v_0) # v1
 
-    beta = np.zeros((k_dim,),dtype=data_type)
-    alpha = np.zeros((k_dim,),dtype=data_type)
+    beta = np.zeros((k_dim,))
+    alpha = np.zeros((k_dim,))
 
     v_0 = v_0 / np.linalg.norm(v_0)
     q_basis[0,:] = v_0
 
     projection = array @ v_0
-    alpha[0] = v_0 @ projection
+    alpha[0] = (v_0.conj() @ projection)
     projection = projection - alpha[0]*v_0
     beta[0] = np.linalg.norm(projection)
 
@@ -51,7 +51,7 @@ def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndar
 
         projection = projection - beta[i-1]*v_p
 
-        alpha[i] = (q_basis[i,:] @ projection) # real?
+        alpha[i] = (q_basis[i,:].conj() @ projection) # real?
         projection = projection - alpha[i]*q_basis[i,:]
 
         beta[i] = np.linalg.norm(projection)
