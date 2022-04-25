@@ -27,9 +27,9 @@ def pauli_couple(particles:int, s1:str, s2:str, part_idx1:int, part_idx2:int)->n
     Returns:
         np.ndarray: 2^particles dimentional array
     """
-    sx = np.array([[0,1.0],[1.0,0]]) + 0.0*1j
-    sy = np.array([[0,-1j],[1j,0]]) + 0.0*1j
-    sz = np.array([[1.0,0],[0,-1.0]]) + 0.0*1j
+    sx = np.array([[0,1.0],[1.0,0]], dtype = np.complex128)
+    sy = np.array([[0,-1j],[1j,0]], dtype = np.complex128)
+    sz = np.array([[1.0,0],[0,-1.0]], dtype = np.complex128)
     if s1 == 'x': sigma1 = sx
     if s1 == 'y': sigma1 = sy
     if s1 == 'z': sigma1 = sz
@@ -47,12 +47,12 @@ def pauli_couple(particles:int, s1:str, s2:str, part_idx1:int, part_idx2:int)->n
     if part_idx1 > part_idx2: part_idx1, part_idx2 = part_idx2, part_idx1
     
     if part_idx1==part_idx2:
-        return tensor(np.eye(2**(part_idx1)) + 0.0*1j, sigma1@sigma2, np.eye(2**(particles - part_idx1 - 1)) + 0.0*1j)
+        return tensor(np.eye(2**(part_idx1), dtype = np.complex128), sigma1@sigma2, np.eye(2**(particles - part_idx1 - 1), dtype = np.complex128))
     
-    pre = np.eye(2**(part_idx1)) + 0.0*1j
-    mid = np.eye(2**(part_idx2 - part_idx1 - 1)) + 0.0*1j
-    post = np.eye(2**(particles - part_idx2 - 1)) + 0.0*1j
-    return tensor(pre,sigma1,mid,sigma2,post) + 0.0*1j
+    pre = np.eye(2**(part_idx1), dtype = np.complex128)
+    mid = np.eye(2**(part_idx2 - part_idx1 - 1), dtype = np.complex128)
+    post = np.eye(2**(particles - part_idx2 - 1), dtype = np.complex128)
+    return tensor(pre,sigma1,mid,sigma2,post)
 
 @njit(nogil=True)
 def hamiltonian(particles:int, Exy:float, Ez:float)->np.ndarray:
@@ -69,7 +69,7 @@ def hamiltonian(particles:int, Exy:float, Ez:float)->np.ndarray:
         np.ndarray: 2^particles x 2^particles array
     """
     n = particles
-    term = np.zeros((2**n, 2**n)) + 0.0*1j
+    term = np.zeros((2**n, 2**n), dtype = np.complex128)
     for idx in range(n):
         term = term + (Exy*pauli_couple(n,'x','x',idx,idx+1) + 
                        Exy*pauli_couple(n,'y','y',idx,idx+1) + 
