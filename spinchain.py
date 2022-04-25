@@ -1,17 +1,32 @@
 import numpy as np
 from numba import njit
 
-
 @njit(nogil=True)
-def tensor(*args):
+def tensor(*args:np.ndarray)->np.ndarray:
+    """tensor (np.kron) product of multiple arrays in order left to right
+
+    Returns:
+        np.ndarray: tensor product result
+    """
     ans = args[0]
     for mats in args[1:]:
         ans = np.kron(ans,mats)
     return ans
 
 @njit(nogil=True)
-def pauli_couple(particles, s1, s2, part_idx1, part_idx2):
-#     particles, part_idx1, part_idx2 = particles, part_idx1-1, part_idx2-1
+def pauli_couple(particles:int, s1:str, s2:str, part_idx1:int, part_idx2:int)->np.ndarray:
+    """returns 2^particles-dim pauli matrices of different operator combinations
+
+    Args:
+        particles (int): number of particles
+        s1 (str): first pauli operator
+        s2 (str): second pauli  operator
+        part_idx1 (int): index for first operator
+        part_idx2 (int): index for second operator
+
+    Returns:
+        np.ndarray: 2^particles dimentional array
+    """
     sx = np.array([[0,1.0],[1.0,0]]) + 0.0*1j
     sy = np.array([[0,-1j],[1j,0]]) + 0.0*1j
     sz = np.array([[1.0,0],[0,-1.0]]) + 0.0*1j
@@ -27,25 +42,32 @@ def pauli_couple(particles, s1, s2, part_idx1, part_idx2):
     if s2 == 'p': sigma2 = sx + 1j*sy
     if s2 == 'm': sigma2 = sx - 1j*sy
     
-#     print(part_idx1,part_idx2)
     if part_idx1 > particles-1: part_idx1 = part_idx1%(particles)
-#     print(part_idx1,part_idx2)
     if part_idx2 > particles-1: part_idx2 = part_idx2%(particles)
-#     print(part_idx1,part_idx2)
     if part_idx1 > part_idx2: part_idx1, part_idx2 = part_idx2, part_idx1
-#     print(part_idx1,part_idx2)
     
     if part_idx1==part_idx2:
         return tensor(np.eye(2**(part_idx1)) + 0.0*1j, sigma1@sigma2, np.eye(2**(particles - part_idx1 - 1)) + 0.0*1j)
     
     pre = np.eye(2**(part_idx1)) + 0.0*1j
-#     print(pre)
     mid = np.eye(2**(part_idx2 - part_idx1 - 1)) + 0.0*1j
     post = np.eye(2**(particles - part_idx2 - 1)) + 0.0*1j
     return tensor(pre,sigma1,mid,sigma2,post) + 0.0*1j
 
 @njit(nogil=True)
-def hamiltonian(particles,Exy,Ez):
+def hamiltonian(particles:int, Exy:float, Ez:float)->np.ndarray:
+    """creates the Hisenberg XXZ spin chain hamiltonain
+    $$ H = J \sum_i^N \left( \sigma^x_i \sigma^x_{i+1} + \sigma^y_i \sigma^y_{i+1} \right) 
+    + \Delta \sum_i^N \left( \sigma^z_i \sigma^z_{i+1} \right) $$
+
+    Args:
+        particles (int): number of particles
+        Exy (float): coefficient of XY term
+        Ez (float): coeddicient of ZZ term
+
+    Returns:
+        np.ndarray: 2^particles x 2^particles array
+    """
     n = particles
     term = np.zeros((2**n, 2**n)) + 0.0*1j
     for idx in range(n):
