@@ -6,7 +6,7 @@ import numpy as np
 # from scipy.linalg import eigh_tridiagonal
 from scipy.sparse import csr_matrix
 from helper import eigh_tridiagonal, construct_tridiag
-print(20)
+print(25)
 def lanczos_basis(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndarray, np.ndarray]:
     """
     Tridigonalises krylov subspace of dimension k_dim for a given sparse array
