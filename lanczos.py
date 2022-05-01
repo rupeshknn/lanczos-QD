@@ -7,7 +7,7 @@ import numpy as np
 from scipy.sparse import csr_matrix
 from helper import eigh_tridiagonal, construct_tridiag
 print(25)
-def lanczos_basis(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndarray, np.ndarray]:
+def lanczos_basis(array: csr_matrix, v_0: np.ndarray, k_dim: int, accurate=False) -> Tuple[np.ndarray, np.ndarray]:
     """
     Tridigonalises krylov subspace of dimension k_dim for a given sparse array
 
@@ -19,6 +19,8 @@ def lanczos_basis(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.nd
         inital vector
     k_dim : int
         dimension of the krylov subspace
+    accurate : bool, optional
+        Additional steps to increase accuracy, by default False
 
     Returns
     -------
@@ -56,7 +58,12 @@ def lanczos_basis(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.nd
         alpha[i] = q_basis[i,:].conj().T @ projection # real?
         projection = projection - alpha[i]*q_basis[i,:] - beta[i-1]*v_p
         beta[i] = np.sqrt(np.abs(projection.conj().T @ projection))
-
+        
+        if accurate:
+            # addtitional steps to increase accuracy
+            d = q_basis[i,:].conj().T @ projection
+            projection -= d*q_basis[i,:]
+            alpha += d
         if beta[i] < error:
             k_dim = i
             # print('smaller space found', k_dim)
@@ -79,8 +86,8 @@ def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int, ret_qt = False) 
         inital vector
     k_dim : int
         dimension of the krylov subspace
-    accurate : bool, optional
-        Additional steps to increase accuracy, by default False
+    ret_qt : bool, optional
+        Return Q (lanczos basis) and T (tridigonal matrix), by default False
 
     Returns
     -------
@@ -92,6 +99,6 @@ def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int, ret_qt = False) 
 
     eigen_vectors_a = (q_basis @ eigen_vectors_t)
     if ret_qt:
-        return q_basis,Tridiagonal
+        return q_basis,Tridiagonal,eigen_value, eigen_vectors_a
     else:
         return eigen_value, eigen_vectors_a
