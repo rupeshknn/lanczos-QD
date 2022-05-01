@@ -47,16 +47,9 @@ def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndar
         v_p = q_basis[i-1,:]
 
         q_basis[[i],:] = projection.T / beta[i-1]
-
         projection = array @ q_basis[i,:] # |array_dim>
-
-        # projection = projection - beta[i-1]*v_p
-
         alpha[i] = q_basis[i,:].conj().T @ projection # real?
         projection = projection - alpha[i]*q_basis[i,:] - beta[i-1]*v_p
-        # projection = projection - alpha[i]*q_basis[i,:]
-
-
         beta[i] = np.sqrt(np.abs(projection.conj().T @ projection))
 
         if beta[i] < error:
