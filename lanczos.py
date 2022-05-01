@@ -5,9 +5,9 @@ from typing import Tuple
 import numpy as np
 # from scipy.linalg import eigh_tridiagonal
 from scipy.sparse import csr_matrix
-from helper import eigh_tridiagonal
+from helper import eigh_tridiagonal, construct_tridiag
 print(20)
-def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndarray, np.ndarray]:
+def lanczos_basis(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndarray, np.ndarray]:
     '''
     Finds the lowest k_dim eigen values and eigen vectors of alpha symmetric array
 
@@ -57,7 +57,15 @@ def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndar
             # print('smaller space found', k_dim)
             break
 
-    eigen_value, eigen_vectors_t = eigh_tridiagonal(alpha[:k_dim], beta[:k_dim-1])
+    Tridiagonal = construct_tridiag(alpha[:k_dim], beta[:k_dim-1])
     q_basis = q_basis[:k_dim]
-    eigen_vectors_a = (q_basis.T @ eigen_vectors_t)
+    q_basis = q_basis.T
+    return Tridiagonal, q_basis
+
+def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndarray, np.ndarray]: 
+    Tridiagonal, q_basis = lanczos_basis(array, v_0, k_dim)
+    eigen_value, eigen_vectors_t = np.linalg.eigh(Tridiagonal)
+
+    eigen_vectors_a = (q_basis @ eigen_vectors_t)
+
     return eigen_value, eigen_vectors_a
