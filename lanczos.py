@@ -22,39 +22,40 @@ def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndar
     eigen_vectors : ndarray, shape (ndim, k_dim) Eigenvectors
     '''
     data_type = array.dtype
-    print(17)
-    array_dim = v_0.size
-    q_basis = np.zeros((k_dim, array_dim),dtype=data_type)
+    v_0 = np.array(v_0).reshape(-1,1) # ket
+    print(22)
+    array_dim = array.shape[0]
+    q_basis = np.zeros((k_dim, array_dim), dtype=data_type)
 
     v_p = np.zeros_like(v_0)
     projection = np.zeros_like(v_0) # v1
 
-    beta = np.zeros((k_dim,),dtype=data_type)
-    alpha = np.zeros((k_dim,),dtype=data_type)
+    beta = np.zeros((k_dim,), dtype=data_type)
+    alpha = np.zeros((k_dim,), dtype=data_type)
 
-    v_0 = v_0 / np.sqrt(np.abs(v_0.conj() @ v_0))
-    q_basis[0,:] = v_0
+    v_0 = v_0 / np.sqrt(np.abs(v_0.conj().T @ v_0))
+    q_basis[[0],:] = v_0.T
 
     projection = array @ v_0
-    alpha[0] = v_0 @ projection
+    alpha[0] = v_0.conj().T @ projection
     projection = projection - alpha[0]*v_0
-    beta[0] = np.sqrt(np.abs(projection.conj() @ projection))
+    beta[0] = np.sqrt(np.abs(projection.conj().T @ projection))
 
     error = np.finfo(np.float64).eps
 
     for i in range(1,k_dim,1):
         v_p = q_basis[i-1,:]
 
-        q_basis[i,:] = projection / beta[i-1]
+        q_basis[[i],:] = projection.T / beta[i-1]
 
         projection = array @ q_basis[i,:] # |array_dim>
 
         projection = projection - beta[i-1]*v_p
 
-        alpha[i] = q_basis[i,:].conj() @ projection # real?
+        alpha[i] = q_basis[i,:].conj().T @ projection # real?
         projection = projection - alpha[i]*q_basis[i,:]
 
-        beta[i] = np.sqrt(np.abs(projection.conj() @ projection))
+        beta[i] = np.sqrt(np.abs(projection.conj().T @ projection))
 
         if beta[i] < error:
             k_dim = i
