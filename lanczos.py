@@ -6,6 +6,7 @@ import numpy as np
 # from scipy.linalg import eigh_tridiagonal
 from scipy.sparse import csr_matrix
 from helper import eigh_tridiagonal
+print(20)
 def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndarray, np.ndarray]:
     '''
     Finds the lowest k_dim eigen values and eigen vectors of alpha symmetric array
@@ -23,7 +24,6 @@ def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndar
     '''
     data_type = array.dtype
     v_0 = np.array(v_0).reshape(-1,1) # ket
-    print(22)
     array_dim = array.shape[0]
     q_basis = np.zeros((k_dim, array_dim), dtype=data_type)
 
@@ -50,10 +50,12 @@ def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndar
 
         projection = array @ q_basis[i,:] # |array_dim>
 
-        projection = projection - beta[i-1]*v_p
+        # projection = projection - beta[i-1]*v_p
 
         alpha[i] = q_basis[i,:].conj().T @ projection # real?
-        projection = projection - alpha[i]*q_basis[i,:]
+        projection = projection - alpha[i]*q_basis[i,:] - beta[i-1]*v_p
+        # projection = projection - alpha[i]*q_basis[i,:]
+
 
         beta[i] = np.sqrt(np.abs(projection.conj().T @ projection))
 
