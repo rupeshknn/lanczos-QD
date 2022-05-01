@@ -21,24 +21,24 @@ def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndar
     eigen_value : ndarray, shape (k_dim,) Eigenvalues
     eigen_vectors : ndarray, shape (ndim, k_dim) Eigenvectors
     '''
-    # data_type = array.dtype
-    print(3)
+    data_type = array.dtype
+    print(17)
     array_dim = v_0.size
-    q_basis = np.zeros((k_dim, array_dim))
+    q_basis = np.zeros((k_dim, array_dim),dtype=data_type)
 
     v_p = np.zeros_like(v_0)
     projection = np.zeros_like(v_0) # v1
 
-    beta = np.zeros((k_dim,))
-    alpha = np.zeros((k_dim,))
+    beta = np.zeros((k_dim,),dtype=data_type)
+    alpha = np.zeros((k_dim,),dtype=data_type)
 
-    v_0 = v_0 / np.linalg.norm(v_0)
+    v_0 = v_0 / np.sqrt(np.abs(v_0.conj() @ v_0))
     q_basis[0,:] = v_0
 
     projection = array @ v_0
-    alpha[0] = (v_0.conj() @ projection)
+    alpha[0] = v_0 @ projection
     projection = projection - alpha[0]*v_0
-    beta[0] = np.linalg.norm(projection)
+    beta[0] = np.sqrt(np.abs(projection.conj() @ projection))
 
     error = np.finfo(np.float64).eps
 
@@ -51,14 +51,14 @@ def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndar
 
         projection = projection - beta[i-1]*v_p
 
-        alpha[i] = (q_basis[i,:].conj() @ projection) # real?
+        alpha[i] = q_basis[i,:].conj() @ projection # real?
         projection = projection - alpha[i]*q_basis[i,:]
 
-        beta[i] = np.linalg.norm(projection)
+        beta[i] = np.sqrt(np.abs(projection.conj() @ projection))
 
         if beta[i] < error:
             k_dim = i
-            print('smaller space found', k_dim)
+            # print('smaller space found', k_dim)
             break
 
     eigen_value, eigen_vectors_t = eigh_tridiagonal(alpha[:k_dim], beta[:k_dim-1])
