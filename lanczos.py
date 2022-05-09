@@ -63,7 +63,7 @@ def lanczos_basis(array: csr_matrix, v_0: np.ndarray, k_dim: int, accurate=False
             # addtitional steps to increase accuracy
             d = q_basis[i,:].conj().T @ projection
             projection -= d*q_basis[i,:]
-            alpha += d
+            alpha[i] += d
         if beta[i] < error:
             k_dim = i
             # print('smaller space found', k_dim)
