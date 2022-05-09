@@ -67,7 +67,7 @@ def lanczos_basis(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.nd
     q_basis = q_basis.T
     return Tridiagonal, q_basis
 
-def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndarray, np.ndarray]: 
+def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int, ret_qt = False) -> Tuple[np.ndarray, np.ndarray]: 
     """
     Finds the lowest k_dim eigenvalues and corresponding eigenvectors of a hermitian array
 
@@ -91,5 +91,7 @@ def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndar
     eigen_value, eigen_vectors_t = np.linalg.eigh(Tridiagonal)
 
     eigen_vectors_a = (q_basis @ eigen_vectors_t)
-
-    return eigen_value, eigen_vectors_a
+    if ret_qt:
+        return q_basis,Tridiagonal
+    else:
+        return eigen_value, eigen_vectors_a
