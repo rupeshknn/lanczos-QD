@@ -3,4 +3,5 @@ __pycache__/
 .vscode
 test_area.ipynb
 numba_test.ipynb
+quspin_converters.py
 *.ini
