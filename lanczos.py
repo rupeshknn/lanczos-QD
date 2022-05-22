@@ -5,7 +5,7 @@ from typing import Tuple
 import numpy as np
 # from scipy.linalg import eigh_tridiagonal
 from scipy.sparse import csr_matrix
-from helper import eigh_tridiagonal, construct_tridiag
+from helper import construct_tridiag
 print(25)
 def lanczos_basis(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndarray, np.ndarray]:
     """
@@ -29,7 +29,7 @@ def lanczos_basis(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.nd
     q_basis : np.ndarray
         basis of the krylov subspace
     """
-    data_type = array.dtype
+    data_type = np.result_type(array.dtype, v_0.dtype)
     v_0 = np.array(v_0).reshape(-1,1) # ket
     array_dim = array.shape[0]
     q_basis = np.zeros((k_dim, array_dim), dtype=data_type)
@@ -63,6 +63,7 @@ def lanczos_basis(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.nd
         delta = q_basis[i,:].conj().T @ projection
         projection -= delta*q_basis[i,:]
         alpha[i] += delta
+        
         if beta[i] < error:
             k_dim = i
             # print('smaller space found', k_dim)
