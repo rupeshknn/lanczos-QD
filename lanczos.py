@@ -59,7 +59,7 @@ def lanczos_basis(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.nd
         projection = projection - alpha[i]*q_basis[i,:] - beta[i-1]*v_p
         beta[i] = np.sqrt(np.abs(projection.conj().T @ projection))
         
-            # addtitional steps to increase accuracy
+        # addtitional steps to increase accuracy
         delta = q_basis[i,:].conj().T @ projection
         projection -= delta*q_basis[i,:]
         alpha[i] += delta
@@ -96,4 +96,4 @@ def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndar
 
     eigen_vectors_a = (q_basis @ eigen_vectors_t)
 
-    return q_basis, Tridiagonal, eigen_value, eigen_vectors_a
+    return eigen_value, eigen_vectors_a, eigen_vectors_t, q_basis
