@@ -7,7 +7,7 @@ import numpy as np
 from scipy.sparse import csr_matrix
 from helper import eigh_tridiagonal, construct_tridiag
 print(25)
-def lanczos_basis(array: csr_matrix, v_0: np.ndarray, k_dim: int, accurate=False) -> Tuple[np.ndarray, np.ndarray]:
+def lanczos_basis(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndarray, np.ndarray]:
     """
     Tridigonalises krylov subspace of dimension k_dim for a given sparse array
 
@@ -59,11 +59,10 @@ def lanczos_basis(array: csr_matrix, v_0: np.ndarray, k_dim: int, accurate=False
         projection = projection - alpha[i]*q_basis[i,:] - beta[i-1]*v_p
         beta[i] = np.sqrt(np.abs(projection.conj().T @ projection))
         
-        if accurate:
             # addtitional steps to increase accuracy
-            d = q_basis[i,:].conj().T @ projection
-            projection -= d*q_basis[i,:]
-            alpha[i] += d
+        delta = q_basis[i,:].conj().T @ projection
+        projection -= delta*q_basis[i,:]
+        alpha[i] += delta
         if beta[i] < error:
             k_dim = i
             # print('smaller space found', k_dim)
@@ -74,7 +73,7 @@ def lanczos_basis(array: csr_matrix, v_0: np.ndarray, k_dim: int, accurate=False
     q_basis = q_basis.T
     return Tridiagonal, q_basis
 
-def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int, ret_qt = False) -> Tuple[np.ndarray, np.ndarray]: 
+def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndarray, np.ndarray]: 
     """
     Finds the lowest k_dim eigenvalues and corresponding eigenvectors of a hermitian array
 
@@ -86,8 +85,6 @@ def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int, ret_qt = False) 
         inital vector
     k_dim : int
         dimension of the krylov subspace
-    ret_qt : bool, optional
-        Return Q (lanczos basis) and T (tridigonal matrix), by default False
 
     Returns
     -------
@@ -98,7 +95,5 @@ def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int, ret_qt = False) 
     eigen_value, eigen_vectors_t = np.linalg.eigh(Tridiagonal)
 
     eigen_vectors_a = (q_basis @ eigen_vectors_t)
-    if ret_qt:
-        return q_basis, Tridiagonal, eigen_value, eigen_vectors_a
-    else:
-        return eigen_value, eigen_vectors_a
+
+    return q_basis, Tridiagonal, eigen_value, eigen_vectors_a
