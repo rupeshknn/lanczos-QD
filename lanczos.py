@@ -1,7 +1,7 @@
 """
 Module contaning Lanczos diagonalization algorithm
 """
-from typing import Tuple
+from typing import Tuple, Optional, Union
 import numpy as np
 # from scipy.linalg import eigh_tridiagonal
 from scipy.sparse import csr_matrix
@@ -19,8 +19,6 @@ def lanczos_basis(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.nd
         inital vector
     k_dim : int
         dimension of the krylov subspace
-    accurate : bool, optional
-        Additional steps to increase accuracy, by default False
 
     Returns
     -------
@@ -74,7 +72,7 @@ def lanczos_basis(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.nd
     q_basis = q_basis.T
     return Tridiagonal, q_basis
 
-def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndarray, np.ndarray]: 
+def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: 
     """
     Finds the lowest k_dim eigenvalues and corresponding eigenvectors of a hermitian array
 
@@ -89,7 +87,7 @@ def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndar
 
     Returns
     -------
-    Tuple[np.ndarray, np.ndarray]
+    Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
         Eigenvalues and Eigenvectors
     """
     Tridiagonal, q_basis = lanczos_basis(array, v_0, k_dim)
@@ -98,3 +96,26 @@ def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndar
     eigen_vectors_a = (q_basis @ eigen_vectors_t)
 
     return eigen_value, eigen_vectors_a, eigen_vectors_t, q_basis
+
+def lanczos_exmp(array: Union[csr_matrix, np.ndarray], v_0: np.ndarray, k_dim: int, dt:float) -> Tuple[np.ndarray]:
+    """Calculates action of matrix exponential on vector using lanczos algorithm
+
+    Parameters
+    ----------
+    array : csr_matrix
+        Array to exponentiate
+    v_0 : np.ndarray
+        Inital vector
+    k_dim : int
+        Dimension of the krylov subspace
+    dt : float
+        Maximum step size.
+
+    Returns
+    -------
+    Tuple[np.ndarray]
+        Action of matrix exponential on state
+    """
+    array = 1j*array
+    eigen_value, _, eigen_vectors_t, q_basis = lanczos_eig(array, v_0, k_dim)
+    return q_basis @ eigen_vectors_t @ (np.exp(-1j*dt*eigen_value)*eigen_vectors_t[0,:])
