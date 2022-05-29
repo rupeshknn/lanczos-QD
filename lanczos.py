@@ -7,7 +7,7 @@ import numpy as np
 from scipy.sparse import csr_matrix
 from helper import construct_tridiag
 print(25)
-def lanczos_basis(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndarray, np.ndarray]:
+def lanczos_basis(array: Union[csr_matrix, np.ndarray], v_0: np.ndarray, k_dim: int) -> Tuple[np.ndarray, np.ndarray]:
     """
     Tridigonalises krylov subspace of dimension k_dim for a given sparse array
 
@@ -72,7 +72,7 @@ def lanczos_basis(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.nd
     q_basis = q_basis.T
     return Tridiagonal, q_basis
 
-def lanczos_eig(array: csr_matrix, v_0: np.ndarray, k_dim: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: 
+def lanczos_eig(array: Union[csr_matrix, np.ndarray], v_0: np.ndarray, k_dim: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: 
     """
     Finds the lowest k_dim eigenvalues and corresponding eigenvectors of a hermitian array
 
