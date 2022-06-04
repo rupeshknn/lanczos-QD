@@ -3,29 +3,25 @@ Module contaning Lanczos diagonalization algorithm
 """
 from typing import Tuple, Union
 import numpy as np
-# from scipy.linalg import eigh_tridiagonal
 from scipy.sparse import csr_matrix
 
-def lanczos_basis(array: Union[csr_matrix, np.ndarray], v_0: np.ndarray, k_dim: int) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Tridigonalises krylov subspace of dimension k_dim for a given sparse array
+def lanczos_basis(
+    array: Union[csr_matrix, np.ndarray],
+    v_0: np.ndarray,
+    k_dim: int
+):
+    """Tridiagonalises a hermitian array in a krylov subspace of dimension k_dim
 
-    Parameters
-    ----------
-    array : csr_matrix
-        sparse array to diagonalise
-    v_0 : np.ndarray
-        inital vector
-    k_dim : int
-        dimension of the krylov subspace
+    Args:
+        array : Array to tridiagonalise
+        v_0 : Inital state
+        k_dim : Dimension of the krylov subspace
 
-    Returns
-    -------
-    Tridiagonal : np.ndarray
-        tridigonalised matrix
-    q_basis : np.ndarray
-        basis of the krylov subspace
+    Returns:
+        Tridiagonal : Tridigonal projection of ``array``
+        q_basis : Basis of the krylov subspace
     """
+
     data_type = np.result_type(array.dtype, v_0.dtype)
     v_0 = np.array(v_0).reshape(-1,1) # ket
     array_dim = array.shape[0]
@@ -47,7 +43,7 @@ def lanczos_basis(array: Union[csr_matrix, np.ndarray], v_0: np.ndarray, k_dim: 
 
     error = np.finfo(np.float64).eps
 
-    for i in range(1,k_dim,1):
+    for i in range(1, k_dim, 1):
         v_p = q_basis[i-1,:]
 
         q_basis[[i],:] = projection.T / beta[i-1]
@@ -63,7 +59,6 @@ def lanczos_basis(array: Union[csr_matrix, np.ndarray], v_0: np.ndarray, k_dim: 
         
         if beta[i] < error:
             k_dim = i
-            # print('smaller space found', k_dim)
             break
 
     Tridiagonal = Tridiagonal = (
@@ -75,50 +70,54 @@ def lanczos_basis(array: Union[csr_matrix, np.ndarray], v_0: np.ndarray, k_dim: 
     q_basis = q_basis.T
     return Tridiagonal, q_basis
 
-def lanczos_eig(array: Union[csr_matrix, np.ndarray], v_0: np.ndarray, k_dim: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: 
+
+def lanczos_eig(
+    array: Union[csr_matrix, np.ndarray],
+    v_0: np.ndarray,
+    k_dim: int
+):
     """
     Finds the lowest k_dim eigenvalues and corresponding eigenvectors of a hermitian array
+    Args:
+        array : Array to diagonalise
+        v_0 : Inital state
+        k_dim : Dimension of the krylov subspace
 
-    Parameters
-    ----------
-    array : csr_matrix
-        sparse array to diagonalise
-    v_0 : np.ndarray
-        inital vector
-    k_dim : int
-        dimension of the krylov subspace
-
-    Returns
-    -------
-    Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
-        Eigenvalues and Eigenvectors
+    Returns:
+        q_basis : Basis of the krylov subspace
+        eigen_values : lowest ``k_dim`` Eigenvalues
+        eigen_vectors_t : Eigenvectors in both krylov-space
+        eigen_vectors_a : Eigenvectors in both hilbert-space
     """
+
     Tridiagonal, q_basis = lanczos_basis(array, v_0, k_dim)
-    eigen_value, eigen_vectors_t = np.linalg.eigh(Tridiagonal)
+    eigen_values, eigen_vectors_t = np.linalg.eigh(Tridiagonal)
 
     eigen_vectors_a = (q_basis @ eigen_vectors_t)
 
-    return eigen_value, eigen_vectors_a, eigen_vectors_t, q_basis
+    return q_basis, eigen_values, eigen_vectors_t, eigen_vectors_a
 
-def lanczos_exmp(array: Union[csr_matrix, np.ndarray], v_0: np.ndarray, k_dim: int, dt:float) -> Tuple[np.ndarray]:
-    """Calculates action of matrix exponential on vector using lanczos algorithm
 
-    Parameters
-    ----------
-    array : csr_matrix
-        Array to exponentiate
-    v_0 : np.ndarray
-        Inital vector
-    k_dim : int
-        Dimension of the krylov subspace
-    dt : float
-        Maximum step size.
+def lanczos_exmp(
+    array: Union[csr_matrix, np.ndarray],
+    v_0: np.ndarray,
+    k_dim: int,
+    max_dt:float,
+):
+    """Calculates action of matrix exponential on the state using lanczos algorithm
 
-    Returns
-    -------
-    Tuple[np.ndarray]
-        Action of matrix exponential on state
+    Args:
+        array : Array to exponentiate
+        v_0 : Inital state
+        k_dim : Dimension of the krylov subspace
+        max_dt : Maximum step size.
+
+    Returns:
+        y_dt : Action of matrix exponential on state
     """
-    array = 1j*array
-    eigen_value, _, eigen_vectors_t, q_basis = lanczos_eig(array, v_0, k_dim)
-    return q_basis @ eigen_vectors_t @ (np.exp(-1j*dt*eigen_value)*eigen_vectors_t[0,:])
+
+    # array = 1j * array # since qiskt-dynamics generator is -1j*H
+
+    q_basis, eigen_values, eigen_vectors_t, _ = lanczos_eig(array, v_0, k_dim)
+    y_dt = q_basis @ eigen_vectors_t @ (np.exp(-1j*max_dt*eigen_values)*eigen_vectors_t[0,:])
+    return y_dt
