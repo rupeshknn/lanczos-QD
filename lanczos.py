@@ -1,12 +1,11 @@
 """
 Module contaning Lanczos diagonalization algorithm
 """
-from typing import Tuple, Optional, Union
+from typing import Tuple, Union
 import numpy as np
 # from scipy.linalg import eigh_tridiagonal
 from scipy.sparse import csr_matrix
-from helper import construct_tridiag
-print(25)
+
 def lanczos_basis(array: Union[csr_matrix, np.ndarray], v_0: np.ndarray, k_dim: int) -> Tuple[np.ndarray, np.ndarray]:
     """
     Tridigonalises krylov subspace of dimension k_dim for a given sparse array
@@ -67,7 +66,11 @@ def lanczos_basis(array: Union[csr_matrix, np.ndarray], v_0: np.ndarray, k_dim: 
             # print('smaller space found', k_dim)
             break
 
-    Tridiagonal = construct_tridiag(alpha[:k_dim], beta[:k_dim-1])
+    Tridiagonal = Tridiagonal = (
+        np.diag(alpha[:k_dim], k=0)
+        + np.diag(beta[: k_dim - 1], k=-1)
+        + np.diag(beta[: k_dim - 1], k=1)
+    )
     q_basis = q_basis[:k_dim]
     q_basis = q_basis.T
     return Tridiagonal, q_basis
